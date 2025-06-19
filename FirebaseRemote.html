@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Home Control</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(180deg, #1f1c2c, #1435a1cc);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      color: gold;
+    }
+
+    h1 {
+      margin: 20px 0 5px;
+      font-size: 2rem;
+      text-align: center;
+    }
+
+    .status {
+      font-size: 1rem;
+      color: #ffc107;
+      margin-bottom: 30px;
+    }
+
+    .device-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 25px;
+      width: 90%;
+      max-width: 800px;
+    }
+
+    .device-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease;
+    }
+
+    .device-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .device-label {
+      font-size: 1.3rem;
+      margin-bottom: 15px;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 70px;
+      height: 36px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: green;
+      border-radius: 34px;
+      transition: 0.4s;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 5px;
+      bottom: 5px;
+      background-color: green;
+      border-radius: 50%;
+      transition: 0.4s;
+    }
+
+    input:checked + .slider {
+      background-color: red;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(34px);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>DADA JEE</h1>
+  <h1>ROOM CONTROLLER</h1>
+  <div class="status" id="status">🔄 Connecting to Firebase...</div>
+
+  <div class="device-grid" id="controls"></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBgUMmWPvSgj9qEiSA4fdv5FP48UJ_lgNM",
+  authDomain: "remoteadmin-71097.firebaseapp.com",
+  databaseURL: "https://remoteadmin-71097-default-rtdb.firebaseio.com",
+  projectId: "remoteadmin-71097",
+  storageBucket: "remoteadmin-71097.firebasestorage.app",
+  messagingSenderId: "619841573453",
+  appId: "1:619841573453:web:6985a957e4d8a40d4ac204",
+  measurementId: "G-ZHHDS2XZGW"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const deviceNames = ["Socket", "Room Light", "FAN", "Varanda Light"];
+    const deviceKeys = ["led1", "led2", "led3", "led4"];
+    const controlsEl = document.getElementById('controls');
+    const statusEl = document.getElementById('status');
+
+    statusEl.textContent = "✅ Connected to Firebase";
+
+    const switches = [];
+
+    // Create UI cards and Firebase listeners
+    deviceNames.forEach((name, i) => {
+      const card = document.createElement('div');
+      card.className = 'device-card';
+
+      const label = document.createElement('div');
+      label.className = 'device-label';
+      label.textContent = name;
+
+      const switchLabel = document.createElement('label');
+      switchLabel.className = 'switch';
+
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.id = "dev_"+i;
+
+      const slider = document.createElement('span');
+      slider.className = 'slider';
+
+      switchLabel.appendChild(input);
+      switchLabel.appendChild(slider);
+      card.appendChild(label);
+      card.appendChild(switchLabel);
+      controlsEl.appendChild(card);
+
+      switches.push(input);
+
+      // Sync from Firebase
+      db.ref(deviceKeys[i]).on("value", snapshot => {
+        const val = snapshot.val();
+        input.checked = (val === "ON");
+      });
+
+      // Send to Firebase on change
+      input.addEventListener("change", () => {
+        db.ref(deviceKeys[i]).set(input.checked ? "ON" : "OFF");
+      });
+    });
+  </script>
+
+</body>
+</html>
